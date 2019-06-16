@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
-client = MongoClient('localhost:27017')
+client = MongoClient('mongodb://forum_analyzer:admin123@ds157901.mlab.com:57901/moocrecv2')
 
 database = client.moocrecv2
 
@@ -30,3 +30,24 @@ class Thread:
         except:
             print('An Error Occurred')
             return False
+
+    @staticmethod
+    def get_discussion_threads_with_responses(course_id):
+        try:
+            results = database.threads.find(
+                {
+                    'course_id': course_id,
+                    'thread_type': 'discussion',
+                    '$or': [
+                        {'children': {'$exists': 'true'}},
+                        {'non_endorsed_responses': {'$exists': 'true'}}
+                    ]
+                }
+            ).limit(100)
+            return results
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return
+        # except:
+        #     print('An Error Occurred')
+        #     return False

@@ -1,24 +1,15 @@
-from google.cloud import language_v1
-from google.cloud.language_v1 import enums
-import six
+from sentiment_analyzer import analyze_sentiment
+from db_connector import Thread
+from pprint import pprint
 
+# analyze_sentiment('You are dying')
 
-def sample_analyze_sentiment(content):
-    client = language_v1.LanguageServiceClient()
+id_1 = 'course-v1:Microsoft+DAT236x+1T2019a'
+has_data = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'
 
-    # content = 'Your text to analyze, e.g. Hello, world!'
+results = Thread.get_discussion_threads_with_responses(has_data)
 
-    if isinstance(content, six.binary_type):
-        content = content.decode('utf-8')
-
-    type_ = enums.Document.Type.PLAIN_TEXT
-    document = {'type': type_, 'content': content}
-
-    response = client.analyze_sentiment(document)
-    sentiment = response.document_sentiment
-    # print('Score: {}'.format(sentiment.score))
-    # print('Magnitude: {}'.format(sentiment.magnitude))
-    print(sentiment)
-
-
-sample_analyze_sentiment('I am dying. But I am happy')
+for result in results:
+    for child in result['children']:
+        pprint(child)
+    break

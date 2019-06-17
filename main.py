@@ -9,28 +9,34 @@ has_data = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'
 
 results = Thread.get_discussion_threads_with_responses(has_data)
 
-thread_text = ['qwe']
 
-
-def get_text_data(thread):
-    data = []
+def get_thread_body_data(raw_thread):
+    thread_data = []
     try:
-        data.append(thread['body'])
-        if 'children' in thread.keys():
-            for child in thread['children']:
-                data.extend(get_text_data(child))
-        if 'non_endorsed_responses' in thread.keys():
-            for child in thread['non_endorsed_responses']:
-                data.extend(get_text_data(child))
+        thread_data.append(raw_thread['body'])
+        if 'children' in raw_thread.keys():
+            for child in raw_thread['children']:
+                thread_data.extend(get_thread_body_data(child))
+        if 'non_endorsed_responses' in raw_thread.keys():
+            for child in raw_thread['non_endorsed_responses']:
+                thread_data.extend(get_thread_body_data(child))
     except:
+        print('Error Occurred')
         pass
-    return data
+    return thread_data
 
 
-text_data = get_text_data(results[0])
+data = []
+for thread in results:
+    body_data = get_thread_body_data(thread)
+    data.append({'title': thread['title'], 'body_data': body_data})
 
-print(results[0]['title'])
-print(text_data)
+print(data.__len__())
+
+# text_data = get_thread_body_data(results[0])
+
+# print(results[0]['title'])
+# print(text_data)
 #
 # for data in result:
 #     # print(data)

@@ -1,6 +1,7 @@
 from google.cloud import language_v1
 from google.cloud.language_v1 import enums
 import six
+from pprint import pprint
 
 
 def analyze_sentiment(content):
@@ -16,6 +17,9 @@ def analyze_sentiment(content):
 
     response = client.analyze_sentiment(document)
     sentiment = response.document_sentiment
+    # pprint(response)
     # print('Score: {}'.format(sentiment.score))
     # print('Magnitude: {}'.format(sentiment.magnitude))
-    print(sentiment)
+    # print(sentiment)
+
+    return sentiment

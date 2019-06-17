@@ -1,4 +1,4 @@
-from sentiment_analyzer import analyze_sentiment
+from nlp_processor import analyze_sentiment
 from db_connector import Thread
 from pprint import pprint
 

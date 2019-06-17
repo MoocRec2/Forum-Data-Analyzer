@@ -15,10 +15,7 @@ thread_text = ['qwe']
 def get_text_data(thread):
     data = []
     try:
-        try:
-            data.append({'title': thread['title'], 'body': thread['body']})
-        except KeyError:
-            data.append({'body': thread['body']})
+        data.append(thread['body'])
         if 'children' in thread.keys():
             for child in thread['children']:
                 data.extend(get_text_data(child))
@@ -30,7 +27,10 @@ def get_text_data(thread):
     return data
 
 
-# result = get_text_data(results[0])
+text_data = get_text_data(results[0])
+
+print(results[0]['title'])
+print(text_data)
 #
 # for data in result:
 #     # print(data)

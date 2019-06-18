@@ -31,6 +31,8 @@ for thread in results:
     body_data = get_thread_body_data(thread)
     data.append({'title': thread['title'], 'body_data': body_data})
 
+print(data[1])
+
 print(data.__len__())
 
 # text_data = get_thread_body_data(results[0])

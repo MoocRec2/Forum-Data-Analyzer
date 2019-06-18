@@ -1,5 +1,6 @@
 from nlp_processor import analyze_sentiment
 from db_connector import Thread
+import statistics
 from pprint import pprint
 
 # analyze_sentiment('You are dying')
@@ -8,6 +9,7 @@ id_1 = 'course-v1:Microsoft+DAT236x+1T2019a'
 has_data = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'
 
 results = Thread.get_discussion_threads_with_responses(has_data)
+print('Retrieved 100 Threads from the Database')
 
 
 def get_thread_body_data(raw_thread):
@@ -26,24 +28,25 @@ def get_thread_body_data(raw_thread):
     return thread_data
 
 
-data = []
+print('Analyzing Sentiments')
+sentiment_data = []
+count = 1
 for thread in results:
+    print('Progress:', count, '%')
     body_data = get_thread_body_data(thread)
-    data.append({'title': thread['title'], 'body_data': body_data})
+    body_sentiment_values = []
+    for body in body_data:
+        body_sentiment = analyze_sentiment(body)
+        body_sentiment_values.append(body_sentiment.score)
+    average_sentiment_value = statistics.mean(body_sentiment_values)
+    sentiment_data.append(
+        {'id': thread['id'], 'is_sentiment_analyzed': True, 'sentiment_score': average_sentiment_value})
+    count += 1
 
-print(data[1])
+print('Sentiments Analyzed (Thread Count=', sentiment_data.__len__(), ')')
+print('Inserting Sentiment Data into Database')
+result = Thread.upsert_threads(sentiment_data)
+if result:
+    print('Sentiment Scores have been saved to the database')
 
-print(data.__len__())
-
-# text_data = get_thread_body_data(results[0])
-
-# print(results[0]['title'])
-# print(text_data)
-#
-# for data in result:
-#     # print(data)
-#     value = analyze_sentiment(data['body'])
-#     print(value.score)
-#     print('qwqewqwe')
-#     # print(''.format(value))
-#     break
+print('Data Length=', sentiment_data.__len__())

@@ -3,8 +3,6 @@ from db_connector import Thread
 import statistics
 from pprint import pprint
 
-# analyze_sentiment('You are dying')
-
 id_1 = 'course-v1:Microsoft+DAT236x+1T2019a'
 has_data = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'
 
@@ -48,5 +46,18 @@ print('Inserting Sentiment Data into Database')
 result = Thread.upsert_threads(sentiment_data)
 if result:
     print('Sentiment Scores have been saved to the database')
+
+print('Calculate Overall Course Sentiment Score')
+sentiment_values_of_each_thread = []
+for info in sentiment_data:
+    try:
+        sentiment_values_of_each_thread.append(info['sentiment_score'])
+    except:
+        print('Error Occurred: Retrieving sentiment_score from sentiment_info')
+        print(info)
+        pass
+
+average_sentiment_score = statistics.mean(sentiment_values_of_each_thread)
+print()
 
 print('Data Length=', sentiment_data.__len__())

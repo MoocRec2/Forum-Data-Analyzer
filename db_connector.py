@@ -85,7 +85,7 @@ class Course:
     def get_course(course_key):
         try:
             courses = database.courses.find({'key': course_key})
-            return courses
+            return courses[0]
         except:
-            return []
+            return None
             pass

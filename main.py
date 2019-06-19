@@ -1,12 +1,13 @@
 from nlp_processor import analyze_sentiment
-from db_connector import Thread
+from db_connector import Thread, Course
+from datetime import datetime
 import statistics
 from pprint import pprint
 
 id_1 = 'course-v1:Microsoft+DAT236x+1T2019a'
-has_data = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'
+course_key = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'
 
-results = Thread.get_discussion_threads_with_responses(has_data)
+results = Thread.get_discussion_threads_with_responses(course_key)
 print('Retrieved 100 Threads from the Database')
 
 
@@ -40,6 +41,7 @@ for thread in results:
     sentiment_data.append(
         {'id': thread['id'], 'is_sentiment_analyzed': True, 'sentiment_score': average_sentiment_value})
     count += 1
+    break
 
 print('Sentiments Analyzed (Thread Count=', sentiment_data.__len__(), ')')
 print('Inserting Sentiment Data into Database')
@@ -47,7 +49,7 @@ result = Thread.upsert_threads(sentiment_data)
 if result:
     print('Sentiment Scores have been saved to the database')
 
-print('Calculate Overall Course Sentiment Score')
+print('Calculating Overall Course Sentiment Score')
 sentiment_values_of_each_thread = []
 for info in sentiment_data:
     try:
@@ -58,6 +60,11 @@ for info in sentiment_data:
         pass
 
 average_sentiment_score = statistics.mean(sentiment_values_of_each_thread)
-print()
+course = Course.get_course(course_key)
 
-print('Data Length=', sentiment_data.__len__())
+course['sentiment_score'] = average_sentiment_score
+course['sentiment_analyzed_date_time'] = datetime.now()
+
+Course.upsert_courses([course])
+
+print('Course Sentiment Information Stored in Database')

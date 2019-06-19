@@ -67,4 +67,4 @@ course['sentiment_analyzed_date_time'] = datetime.now()
 
 Course.upsert_courses([course])
 
-print('Course Sentiment Information Stored in Database')
+print('Course Sentiment Information Stored in Database (Threads Analyzed = {})'.format(count - 1))

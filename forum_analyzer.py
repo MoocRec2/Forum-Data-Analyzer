@@ -1,4 +1,4 @@
-from nlp_processor import analyze_sentiment
+from nlp_processor import GoogleNLP
 from db_connector import Thread, Course
 from datetime import datetime
 import statistics
@@ -35,7 +35,7 @@ def analyze_sentiment_of_course(course_key):
         body_data = get_thread_body_data(thread)
         body_sentiment_values = []
         for body in body_data:
-            body_sentiment = analyze_sentiment(body)
+            body_sentiment = GoogleNLP.analyze_sentiment(body)
             body_sentiment_values.append(body_sentiment.score)
         average_sentiment_value = statistics.mean(body_sentiment_values)
         sentiment_data.append(

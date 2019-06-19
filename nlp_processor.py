@@ -4,22 +4,32 @@ import six
 from pprint import pprint
 
 
-def analyze_sentiment(content):
-    client = language_v1.LanguageServiceClient()
+class GoogleNLP:
 
-    # content = 'Your text to analyze, e.g. Hello, world!'
+    @staticmethod
+    def analyze_sentiment(content):
+        client = language_v1.LanguageServiceClient()
 
-    if isinstance(content, six.binary_type):
-        content = content.decode('utf-8')
+        # content = 'Your text to analyze, e.g. Hello, world!'
 
-    type_ = enums.Document.Type.PLAIN_TEXT
-    document = {'type': type_, 'content': content}
+        if isinstance(content, six.binary_type):
+            content = content.decode('utf-8')
 
-    response = client.analyze_sentiment(document)
-    sentiment = response.document_sentiment
-    # pprint(response)
-    # print('Score: {}'.format(sentiment.score))
-    # print('Magnitude: {}'.format(sentiment.magnitude))
-    # print(sentiment)
+        type_ = enums.Document.Type.PLAIN_TEXT
+        document = {'type': type_, 'content': content}
 
-    return sentiment
+        response = client.analyze_sentiment(document)
+        sentiment = response.document_sentiment
+        # pprint(response)
+        # print('Score: {}'.format(sentiment.score))
+        # print('Magnitude: {}'.format(sentiment.magnitude))
+        # print(sentiment)
+
+        return sentiment
+
+
+class VADER:
+
+    @staticmethod
+    def analyze_sentiment(content):
+        pass

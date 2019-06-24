@@ -103,3 +103,5 @@ def analyze_course(course_key):
     Course.upsert_courses([course])
 
     print('Course Sentiment Information Stored in Database (Threads Analyzed = {})'.format(iteration - 1))
+
+    print('Course Statistics = ', course['statistics'])

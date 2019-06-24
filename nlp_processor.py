@@ -2,6 +2,9 @@ from google.cloud import language_v1
 from google.cloud.language_v1 import enums
 import six
 from pprint import pprint
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+analyzer = SentimentIntensityAnalyzer()
 
 
 class GoogleNLP:
@@ -32,4 +35,6 @@ class VADER:
 
     @staticmethod
     def analyze_sentiment(content):
-        pass
+        polarity_scores = analyzer.polarity_scores(content)
+        data = {'score': polarity_scores['compound']}
+        return data

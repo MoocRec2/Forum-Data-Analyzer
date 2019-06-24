@@ -43,7 +43,7 @@ class Thread:
                         {'non_endorsed_responses': {'$exists': 'true'}}
                     ]
                 }
-            ).limit(100)
+            )
             return results
         except ServerSelectionTimeoutError:
             print('Error Connecting to Database')

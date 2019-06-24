@@ -27,10 +27,10 @@ def analyze_sentiment_of_course(course_key):
 
     print('Analyzing Sentiments')
     sentiment_data = []
-    count = 1
-    total = results.count()
+    iteration = 1
+    total_thread_count = results.count()
     for thread in results:
-        print('Progress:', (count / total) * 100, '%')
+        print('Progress:', (iteration / total_thread_count) * 100, '%')
         body_data = get_thread_body_data(thread)
         body_sentiment_values = []
         for body in body_data:
@@ -39,7 +39,7 @@ def analyze_sentiment_of_course(course_key):
         average_sentiment_value = statistics.mean(body_sentiment_values)
         sentiment_data.append(
             {'id': thread['id'], 'is_sentiment_analyzed': True, 'sentiment_score': average_sentiment_value})
-        count += 1
+        iteration += 1
 
     print('Sentiments Analyzed (Thread Count=', sentiment_data.__len__(), ')')
     print('Inserting Sentiment Data into Database')
@@ -58,11 +58,12 @@ def analyze_sentiment_of_course(course_key):
             pass
 
     average_sentiment_score = statistics.mean(sentiment_values_of_each_thread)
+    score = average_sentiment_score * total_thread_count
     course = Course.get_course(course_key)
 
-    course['sentiment_score'] = average_sentiment_score
+    course['sentiment_score'] = score
     course['sentiment_analyzed_date_time'] = datetime.now()
 
     Course.upsert_courses([course])
 
-    print('Course Sentiment Information Stored in Database (Threads Analyzed = {})'.format(count - 1))
+    print('Course Sentiment Information Stored in Database (Threads Analyzed = {})'.format(iteration - 1))

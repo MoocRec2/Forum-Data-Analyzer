@@ -4,9 +4,6 @@ from datetime import datetime
 import statistics
 from pprint import pprint
 
-id_1 = 'course-v1:Microsoft+DAT236x+1T2019a'
-course_key = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'
-
 
 def analyze_sentiment_of_course(course_key):
     results = Thread.get_discussion_threads_with_responses(course_key)

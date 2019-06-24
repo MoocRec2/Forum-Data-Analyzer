@@ -1,9 +1,11 @@
-from forum_analyzer import analyze_sentiment_of_course
+from forum_analyzer import analyze_course
 
 # Contains a MODERATE amount of data
-course_one = 'course-v1:Microsoft+DAT236x+1T2019a'
+course_one = 'course-v1:Microsoft+DAT236x+1T2019a'  # 5 Threads
 
 # Contains a LARGE amount of data
-course_two = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'
+course_two = 'course-v1:UCSanDiegoX+DSE200x+1T2019a'  # 180 Threads
 
-analyze_sentiment_of_course(course_two)
+course_four = 'course-v1:HarvardX+PH125.8x+2T2018'  # 80 Threads
+
+analyze_course(course_one)

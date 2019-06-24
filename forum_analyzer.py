@@ -5,10 +5,10 @@ import statistics
 from pprint import pprint
 
 
-def analyze_sentiment_of_course(course_key):
+def analyze_course(course_key):
     print('Beginning to Analyze Course:', course_key)
     results = Thread.get_discussion_threads_with_responses(course_key)
-    print('Retrieved 100 Threads from the Database')
+    print('Retrieved Threads from the Database')
 
     def get_thread_body_data(raw_thread):
         thread_data = []

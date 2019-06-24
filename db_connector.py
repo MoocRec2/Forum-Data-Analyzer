@@ -1,7 +1,8 @@
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
-client = MongoClient('mongodb://forum_analyzer:admin123@ds157901.mlab.com:57901/moocrecv2')
+# client = MongoClient('mongodb://forum_analyzer:admin123@ds157901.mlab.com:57901/moocrecv2')
+client = MongoClient('mongodb://localhost:27017/moocrecv2')
 
 database = client.moocrecv2
 
@@ -50,6 +51,36 @@ class Thread:
             return
 
     @staticmethod
+    def get_latest_thread_of_course(course_id):
+        try:
+            result = database.threads.find({'course_id': course_id}).sort('created_at', -1).limit(1)
+            return result[0]
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+        except:
+            print('An Error Occurred')
+
+    @staticmethod
+    def get_earliest_thread_of_course(course_id):
+        try:
+            result = database.threads.find({'course_id': course_id}).sort('created_at', 1).limit(1)
+            return result[0]
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+        except:
+            print('An Error Occurred')
+
+    @staticmethod
+    def get_thread_count_of_course(course_id):
+        try:
+            result = database.threads.count_documents({'course_id': course_id})
+            return result
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+        except:
+            print('An Error Occurred')
+
+    @staticmethod
     def get_sentiment_analyzed_threads():
         try:
             results = database.Threads.find({
@@ -64,6 +95,16 @@ class Thread:
             return results
         except:
             return []
+
+    @staticmethod
+    def get_last_activity_date(course_id):
+        try:
+            result = database.threads.find({'course_id': course_id}).sort('last_activity_at', -1).limit(1)
+            return result
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+        except:
+            print('An Error Occurred')
 
 
 class Course:

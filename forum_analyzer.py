@@ -5,6 +5,10 @@ import statistics
 from pprint import pprint
 
 
+def diff_month(d1, d2):
+    return (d1.year - d2.year) * 12 + d1.month - d2.month
+
+
 def analyze_course(course_key):
     print('Beginning to Analyze Course:', course_key)
     results = Thread.get_discussion_threads_with_responses(course_key)
@@ -29,11 +33,13 @@ def analyze_course(course_key):
     sentiment_data = []
     iteration = 1
     total_thread_count = results.count()
+    post_count = 0
     for thread in results:
         print('Progress:', (iteration / total_thread_count) * 100, '%')
         body_data = get_thread_body_data(thread)
         body_sentiment_values = []
         for body in body_data:
+            post_count += 1
             body_sentiment = VADER.analyze_sentiment(body)
             body_sentiment_values.append(body_sentiment['score'])
         average_sentiment_value = statistics.mean(body_sentiment_values)
@@ -58,11 +64,27 @@ def analyze_course(course_key):
             pass
 
     average_sentiment_score = statistics.mean(sentiment_values_of_each_thread)
-    score = average_sentiment_score * total_thread_count
-    course = Course.get_course(course_key)
+    weighted_sentiment_score = average_sentiment_score * total_thread_count
 
-    course['sentiment_score'] = score
-    course['sentiment_analyzed_date_time'] = datetime.now()
+    course = Course.get_course(course_key)
+    latest_thread = Thread.get_latest_thread_of_course(course_key)
+    earliest_thread = Thread.get_earliest_thread_of_course(course_key)
+    min_date = datetime.strptime(earliest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+    max_date = datetime.strptime(latest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+    months = diff_month(max_date, min_date)
+    thread_count = Thread.get_thread_count_of_course(course_key)
+    threads_per_month = thread_count / months
+    last_activity_date = Thread.get_last_activity_date(course_key)
+    print(months)
+
+    course['score'] = weighted_sentiment_score
+    course['statistics'] = {
+        'threads_per_month': threads_per_month,
+        'last_active_date': last_activity_date,
+        'total_thread_count': thread_count,
+        'total_post_count': post_count
+    }
+    course['analyzed_date_time'] = datetime.now()
 
     Course.upsert_courses([course])
 

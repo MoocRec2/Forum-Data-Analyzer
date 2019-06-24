@@ -100,7 +100,7 @@ class Thread:
     def get_last_activity_date(course_id):
         try:
             result = database.threads.find({'course_id': course_id}).sort('last_activity_at', -1).limit(1)
-            return result
+            return result[0]
         except ServerSelectionTimeoutError:
             print('Error Connecting to Database')
         except:

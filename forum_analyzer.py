@@ -72,18 +72,32 @@ def analyze_course(course_key):
     min_date = datetime.strptime(earliest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
     max_date = datetime.strptime(latest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
     months = diff_month(max_date, min_date)
+    if months == 0:
+        months = 1
     thread_count = Thread.get_thread_count_of_course(course_key)
     threads_per_month = thread_count / months
     last_activity_date = Thread.get_last_activity_date(course_key)
     print(months)
+    try:
+        course['score'] = weighted_sentiment_score
+    except:
+        print('Exception Thrown line 82: weighted_sentiment_score=', weighted_sentiment_score)
+        pprint(course)
 
-    course['score'] = weighted_sentiment_score
-    course['statistics'] = {
-        'threads_per_month': threads_per_month,
-        'last_active_date': last_activity_date,
-        'total_thread_count': thread_count,
-        'total_post_count': post_count
-    }
+    try:
+        course['statistics'] = {
+            'threads_per_month': threads_per_month,
+            'last_active_date': last_activity_date['last_activity_at'],
+            'total_thread_count': thread_count,
+            'total_post_count': post_count
+        }
+    except:
+        print({
+            'threads_per_month': threads_per_month,
+            'last_active_date': last_activity_date['last_activity_at'],
+            'total_thread_count': thread_count,
+            'total_post_count': post_count
+        })
     course['analyzed_date_time'] = datetime.now()
 
     Course.upsert_courses([course])

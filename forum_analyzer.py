@@ -61,16 +61,11 @@ def calculate_course_rating(results, total_threads_with_responses_count):
 
     # print('Thread Count =', iteration, 'and total_thread_count=', total_threads_with_responses_count)
 
-    print('Sentiments Analyzed (Thread Count=', sentiment_data.__len__(), ')')
-    print('Inserting Sentiment Data into Database')
     result = Thread.upsert_threads(sentiment_data)  # Might be unnecessary because processing is fast enough
 
-    if result:
-        print('Intermediate Sentiment Scores have been saved to the database')
+    if not result:
+        print('Intermediate data could not be saved to the database, check database connection')
 
-    # print('Calculating Overall Course Sentiment Score')
-    # print('Course Rating: Beginning Processing')
-    print('Continuing Processing')
     sentiment_values_of_each_thread = []
     for info in sentiment_data:
         try:
@@ -115,21 +110,20 @@ def calculate_forum_activity_rating(course_key):
 
 # The parent method of the program
 def analyze_course(course_key):
-    print('----- Beginning Analysis -----')
-    print('Course Key:\t', course_key)
-    results = Thread.get_discussion_threads_with_responses(course_key)
-    print('Retrieved Threads from the Database (Threads with Responses)')
+    print('---------- Beginning Analysis ----------\n')
+    print('Course Key:\t', course_key, '\n')
 
-    responded_thread_count = results.count()
-    print('No. of Threads with Responses:', responded_thread_count)
+    responded_threads_list = Thread.get_discussion_threads_with_responses(course_key)
 
-    course_rating, posts_per_thread_count = calculate_course_rating(results, responded_thread_count)
+    responded_thread_count = responded_threads_list.count()
+
+    course_rating, posts_per_thread_count = calculate_course_rating(responded_threads_list, responded_thread_count)
     forum_activity_rating, threads_per_month, thread_count, last_activity_date = calculate_forum_activity_rating(
         course_key)
 
     print('--- Calculated Ratings ---')
-    print('Course Rating:', course_rating)
-    print('Forum Activity Rating:', forum_activity_rating)
+    print('Course Rating\t\t:\t', course_rating)
+    print('Forum Activity Rating\t:\t', forum_activity_rating, '\n')
 
     # Saving Updated Information in Database
     course = Course.get_course(course_key)
@@ -157,13 +151,13 @@ def analyze_course(course_key):
     Course.upsert_courses([course])
 
     print('----- Statistics -----')
-    print('Threads per Month\t\t:\t', threads_per_month)
-    print('Last Active Date\t\t:\t', last_activity_date['last_activity_at'])
-    print('Total Thread Count\t\t:\t', thread_count)
+    print('Threads per Month\t:\t', threads_per_month)
+    print('Last Active Date\t:\t', last_activity_date['last_activity_at'])
+    print('Total Thread Count\t:\t', thread_count)
     print('Responded Thread Count\t:\t', responded_thread_count)
-    print('Total Post Count\t\t:\t', post_count)
+    print('Total Post Count\t:\t', post_count)
     print('Average Posts per Thread:\t', statistics.mean(posts_per_thread_count))
     print('Maximum Posts per Thread:\t', max(posts_per_thread_count))
-    print('Minimum Posts per Thread:\t', min(posts_per_thread_count))
+    print('Minimum Posts per Thread:\t', min(posts_per_thread_count), '\n')
 
     print('Course Analysis Complete ({} Threads Analyzed)'.format(responded_thread_count))

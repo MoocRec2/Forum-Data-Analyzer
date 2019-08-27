@@ -17,4 +17,4 @@ courses = [
 # for course in courses:
 #     analyze_course(course)
 
-analyze_course(course_four)
+analyze_course(course_two)

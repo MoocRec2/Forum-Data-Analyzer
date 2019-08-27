@@ -26,5 +26,10 @@ course_four = 'course-v1:HarvardX+PH125.8x+2T2018'
 # print(count)
 
 
-qwe = Thread.get_last_activity_date(course_four)
-pprint(qwe[0]['last_activity_at'])
+last_thread = Thread.get_last_activity_date(course_four)
+pprint(last_thread['last_activity_at'])
+last_active_date = datetime.strptime(last_thread['last_activity_at'], "%Y-%m-%dT%H:%M:%SZ")
+today = datetime.today()
+
+delta = today - last_active_date
+print(delta.days)

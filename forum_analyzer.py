@@ -26,24 +26,7 @@ def get_thread_body_data(raw_thread):
     return thread_data
 
 
-def calculate_forum_activity_rating():
-    return 0
-
-
-def calculate_course_rating():
-    return 0
-
-
-# The parent method of the program
-def analyze_course(course_key):
-    print('Beginning to Analyze Course:', course_key)
-    results = Thread.get_discussion_threads_with_responses(course_key)
-    print('Retrieved Threads from the Database (Threads with Responses)')
-
-    total_threads_with_responses_count = results.count()
-    print('No. of Threads with Responses:', total_threads_with_responses_count)
-
-    print('Analyzing Sentiments')
+def calculate_course_rating(results, total_threads_with_responses_count):
     sentiment_data = []
     posts_per_thread_count = []
     post_count = 0
@@ -105,12 +88,11 @@ def analyze_course(course_key):
 
     # Addition of the sentiment scores of the individual posts
     weighted_sentiment_score = average_sentiment_score * total_threads_with_responses_count
-    print('--- Ratings ---')
-    print('Course Rating:', weighted_sentiment_score)
 
-    forum_activity_rating = 0
+    return weighted_sentiment_score, post_count
 
-    course = Course.get_course(course_key)
+
+def calculate_forum_activity_rating(course_key):
     latest_thread = Thread.get_latest_thread_of_course(course_key)
     earliest_thread = Thread.get_earliest_thread_of_course(course_key)
     min_date = datetime.strptime(earliest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
@@ -127,38 +109,55 @@ def analyze_course(course_key):
 
     delta = today - last_active_date
     # score = weighted_sentiment_score * ((months * 30) - delta.days)
-    score = weighted_sentiment_score * ((months * 30))
+    score = threads_per_month
 
-    print('Forum Activity Rating:', score)
+    return score, threads_per_month, thread_count, last_activity_date
 
+
+# The parent method of the program
+def analyze_course(course_key):
+    print('Beginning to Analyze Course:', course_key)
+    results = Thread.get_discussion_threads_with_responses(course_key)
+    print('Retrieved Threads from the Database (Threads with Responses)')
+
+    total_threads_with_responses_count = results.count()
+    print('No. of Threads with Responses:', total_threads_with_responses_count)
+
+    print('Analyzing Sentiments')
+    course_rating, post_count = calculate_course_rating(results, total_threads_with_responses_count)
+    forum_activity_rating, threads_per_month, thread_count, last_activity_date = calculate_forum_activity_rating(
+        course_key)
+
+    print('--- Calculated Ratings ---')
+    print('Course Rating:', course_rating)
+    print('Forum Activity Rating:', forum_activity_rating)
+
+    course = Course.get_course(course_key)
     try:
-        course['score'] = weighted_sentiment_score
-        course['course_rating'] = weighted_sentiment_score
+        course['score'] = course_rating
+        course['course_rating'] = course_rating
         course['forum_activity_rating'] = forum_activity_rating
     except:
-        print('Exception Thrown line 82: weighted_sentiment_score=', weighted_sentiment_score)
+        print('Exception Thrown line 82: weighted_sentiment_score=', course_rating)
         pprint(course)
 
-    try:
-        course['statistics'] = {
-            'threads_per_month': threads_per_month,
-            'last_active_date': last_activity_date['last_activity_at'],
-            'total_thread_count': thread_count,
-            'responded_thread_count': total_threads_with_responses_count,
-            'total_post_count': post_count
-        }
-    except:
-        print({
-            'threads_per_month': threads_per_month,
-            'last_active_date': last_activity_date['last_activity_at'],
-            'total_thread_count': thread_count,
-            'responded_thread_count': total_threads_with_responses_count,
-            'total_post_count': post_count
-        })
+    # try:
+    course['statistics'] = {
+        'threads_per_month': threads_per_month,
+        'last_active_date': last_activity_date['last_activity_at'],
+        'total_thread_count': thread_count,
+        'responded_thread_count': total_threads_with_responses_count,
+        'total_post_count': post_count
+    }
+    # except:
+    #     print('Exception Occurred: When attempting to include statistics in course object')
+
     course['analyzed_date_time'] = datetime.now()
 
     Course.upsert_courses([course])
 
-    print('Course Sentiment Information Stored in Database (Threads Analyzed = {})'.format(iteration - 1))
-    course['statistics']['sentiment_score'] = average_sentiment_score
+    # print('Course Sentiment Information Stored in Database (Threads Analyzed = {})'.format(
+    #     total_threads_with_responses_count))
+    print('Course Analysis Complete ({} Threads Analyzed)'.format(total_threads_with_responses_count))
+    # course['statistics']['sentiment_score'] = average_sentiment_score
     print('Course Statistics = ', course['statistics'])

@@ -9,7 +9,8 @@ def diff_month(d1, d2):
     return (d1.year - d2.year) * 12 + d1.month - d2.month
 
 
-# Gets all the nested posts into an array
+# Gets all the nested posts and replies into an array
+# Reason: Linear data formats are easier to process
 def get_thread_body_data(raw_thread):
     thread_data = []
     try:
@@ -156,8 +157,11 @@ def analyze_course(course_key):
 
     Course.upsert_courses([course])
 
-    # print('Course Sentiment Information Stored in Database (Threads Analyzed = {})'.format(
-    #     total_threads_with_responses_count))
     print('Course Analysis Complete ({} Threads Analyzed)'.format(total_threads_with_responses_count))
-    # course['statistics']['sentiment_score'] = average_sentiment_score
-    print('Course Statistics = ', course['statistics'])
+    # print('Course Statistics = ', course['statistics'])
+    print('----- Statistics -----')
+    print('Threads per Month\t\t:\t', threads_per_month)
+    print('Last Active Date\t\t:\t', last_activity_date['last_activity_at'])
+    print('Total Thread Count\t\t:\t', thread_count)
+    print('Responded Thread Count\t:\t', total_threads_with_responses_count)
+    print('Total Post Count\t\t:\t', post_count)

@@ -103,10 +103,11 @@ def calculate_forum_activity_rating(course_key):
     today = datetime.today()
     delta = today - last_active_date
     # score = weighted_sentiment_score * ((months * 30) - delta.days)
-    score = threads_per_month
 
     question_thread_count = Thread.get_question_thread_count_of_course(course_key)
     discussion_thread_count = Thread.get_discussion_thread_count_of_course(course_key)
+
+    score = threads_per_month
 
     stats_dto = {
         'threads_per_month': threads_per_month,

@@ -105,7 +105,18 @@ def calculate_forum_activity_rating(course_key):
     # score = weighted_sentiment_score * ((months * 30) - delta.days)
     score = threads_per_month
 
-    return score, threads_per_month, thread_count, last_activity_date
+    question_thread_count = Thread.get_question_thread_count_of_course(course_key)
+    discussion_thread_count = Thread.get_discussion_thread_count_of_course(course_key)
+
+    stats_dto = {
+        'threads_per_month': threads_per_month,
+        'thread_count': thread_count,
+        'last_activity_date': dict(last_activity_date),
+        'question_thread_count': question_thread_count,
+        'discussion_thread_count': discussion_thread_count
+    }
+
+    return score, stats_dto
 
 
 # The parent method of the program
@@ -118,8 +129,14 @@ def analyze_course(course_key):
     responded_thread_count = responded_threads_list.count()
 
     course_rating, posts_per_thread_count = calculate_course_rating(responded_threads_list, responded_thread_count)
-    forum_activity_rating, threads_per_month, thread_count, last_activity_date = calculate_forum_activity_rating(
-        course_key)
+    forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key)
+
+    # Unpacking the DTO
+    threads_per_month = stats_dto['threads_per_month']
+    thread_count = stats_dto['thread_count']
+    last_activity_date = stats_dto['last_activity_date']
+    question_thread_count = stats_dto['question_thread_count']
+    discussion_thread_count = stats_dto['discussion_thread_count']
 
     print('--- Calculated Ratings ---')
     print('Course Rating\t\t:\t', course_rating)
@@ -127,15 +144,12 @@ def analyze_course(course_key):
 
     # Saving Updated Information in Database
     course = Course.get_course(course_key)
-    # try:
+
     course['course_rating'] = course_rating
     course['forum_activity_rating'] = forum_activity_rating
-    # except:
-    #     print('Exception Thrown line 82: weighted_sentiment_score=', course_rating)
-    #     pprint(course)
 
-    # try:
     post_count = sum(posts_per_thread_count)
+
     course['statistics'] = {
         'threads_per_month': threads_per_month,
         'last_active_date': last_activity_date['last_activity_at'],
@@ -143,18 +157,20 @@ def analyze_course(course_key):
         'responded_thread_count': responded_thread_count,
         'total_post_count': post_count
     }
-    # except:
-    #     print('Exception Occurred: When attempting to include statistics in course object')
 
     course['analyzed_date_time'] = datetime.now()
 
-    Course.upsert_courses([course])
+    saved = Course.upsert_courses([course])
+    if not saved:
+        print('Error: Information not Saved to Database')
 
     print('----- Statistics -----')
     print('Threads per Month\t:\t', threads_per_month)
     print('Last Active Date\t:\t', last_activity_date['last_activity_at'])
     print('Total Thread Count\t:\t', thread_count)
     print('Responded Thread Count\t:\t', responded_thread_count)
+    print('Question Thread Type\t:\t', question_thread_count)
+    print('Discussion Thread Type\t:\t', discussion_thread_count)
     print('Total Post Count\t:\t', post_count)
     print('Average Posts per Thread:\t', statistics.mean(posts_per_thread_count))
     print('Maximum Posts per Thread:\t', max(posts_per_thread_count))

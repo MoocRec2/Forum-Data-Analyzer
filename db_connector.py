@@ -71,6 +71,46 @@ class Thread:
             print('An Error Occurred')
 
     @staticmethod
+    def get_discussion_thread_count_of_course(course_id):
+        try:
+            count = database.threads.count_documents({'course_id': course_id, 'thread_type': 'discussion'})
+            return count
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+        except:
+            print('An Error Occurred')
+
+    @staticmethod
+    def get_discussion_threads_of_course(course_id):
+        try:
+            documents = database.threads.find({'course_id': course_id, 'thread_type': 'discussion'})
+            return documents
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+        except:
+            print('An Error Occurred')
+
+    @staticmethod
+    def get_question_thread_count_of_course(course_id):
+        try:
+            count = database.threads.count_documents({'course_id': course_id, 'thread_type': 'question'})
+            return count
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+        except:
+            print('An Error Occurred')
+
+    @staticmethod
+    def get_question_threads_of_course(course_id):
+        try:
+            documents = database.threads.find({'course_id': course_id, 'thread_type': 'question'})
+            return documents
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+        except:
+            print('An Error Occurred')
+
+    @staticmethod
     def get_thread_count_of_course(course_id):
         try:
             result = database.threads.count_documents({'course_id': course_id})

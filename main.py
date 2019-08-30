@@ -19,6 +19,22 @@ for course in courses:
     analyze_course(course)
     # break
 
+
 # --- Coursera ----
 
 # analyze_course(course_two)
+
+# TODO: Perform Normalization on the 2 Scores
+def normalize(courses):
+    courses_with_forum_ratings = []
+    max_rating = 0
+    for course in courses_with_forum_ratings:
+        if course['forum_activity_rating'] > max_rating:
+            max_rating = course['forum_activity_rating']
+
+    for course in courses_with_forum_ratings:
+        rating = (course['forum_activity_rating'] / max_rating) * 5
+        course['forum_activity_rating'] = rating
+
+    for course in courses_with_forum_ratings:
+        print(course['forum_activity_rating'])

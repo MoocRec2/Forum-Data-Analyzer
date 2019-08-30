@@ -14,8 +14,8 @@ with open('./db_credentials.json', 'r') as f:
 connection_string = db_credentials['connectionString']
 
 # client = MongoClient('mongodb://api:backendapi1@ds157901.mlab.com:57901/moocrecv2?retryWrites=false')
-# client = MongoClient('mongodb://localhost:27017/moocrecv2')
-client = MongoClient(connection_string)
+client = MongoClient('mongodb://localhost:27017/moocrecv2')
+# client = MongoClient(connection_string)
 
 database = client.moocrecv2
 
@@ -175,7 +175,7 @@ class Course:
     def upsert_courses(courses):
         try:
             for course in courses:
-                database.courses.update_one({'key': course['key']}, {"$set": course}, upsert=True)
+                database.courses.update_one({'_id': course['_id']}, {"$set": course}, upsert=True)
             return True
         except ServerSelectionTimeoutError:
             print('Error Connecting to Database')

@@ -2,6 +2,12 @@ from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 import json
 
+platform_to_collection_mapping = {
+    'Edx': 'threads',
+    'FutureLearn': 'future_learn_threads',
+    'Coursera': 'coursera_threads'
+}
+
 with open('./db_credentials.json', 'r') as f:
     db_credentials = json.load(f)
 
@@ -38,6 +44,15 @@ class Thread:
         except:
             print('An Error Occurred')
             return False
+
+    @staticmethod
+    def get_discussion_threads(search_query, platform):
+        try:
+            results = database[platform_to_collection_mapping[platform]].find(search_query)
+            return results
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return
 
     @staticmethod
     def get_discussion_threads_with_responses(course_id):
@@ -170,10 +185,19 @@ class Course:
             return False
 
     @staticmethod
-    def get_course(course_key):
+    def get_course(search_query):
         try:
-            courses = database.courses.find({'key': course_key})
+            courses = database.courses.find(search_query)
             return courses[0]
+        except:
+            return None
+            pass
+
+    @staticmethod
+    def get_courses(search_query):
+        try:
+            courses = database.courses.find(search_query)
+            return courses
         except:
             return None
             pass

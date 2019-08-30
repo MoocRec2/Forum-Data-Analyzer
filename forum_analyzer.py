@@ -121,60 +121,89 @@ def calculate_forum_activity_rating(course_key, posts_per_thread_count):
 
 
 # The parent method of the program
-def analyze_course(course_key):
+def analyze_course(course):
     print('---------- Beginning Analysis ----------\n')
-    print('Course Key:\t', course_key, '\n')
+    platform = course['platform']
+    print('Platform:', platform)
 
-    responded_threads_list = Thread.get_discussion_threads_with_responses(course_key)
+    if platform == 'Edx':
 
-    responded_thread_count = responded_threads_list.count()
+        course_key = course['key']
+        print('Course Key:\t', course_key, '\n')
 
-    course_rating, posts_per_thread_count = calculate_course_rating(responded_threads_list, responded_thread_count)
-    forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count)
+        platform = ''
+        course = Course.get_course({'key': course_key})
 
-    # Unpacking the DTO
-    threads_per_month = stats_dto['threads_per_month']
-    thread_count = stats_dto['thread_count']
-    last_activity_date = stats_dto['last_activity_date']
-    question_thread_count = stats_dto['question_thread_count']
-    discussion_thread_count = stats_dto['discussion_thread_count']
+        responded_threads_list = list(Thread.get_discussion_threads_with_responses(course_key))
 
-    print('--- Calculated Ratings ---')
-    print('Course Rating\t\t:\t', course_rating)
-    print('Forum Activity Rating\t:\t', forum_activity_rating, '\n')
+        if responded_threads_list.__len__() == 0:
+            print('No Threads Found in Database')
+            return
 
-    # Saving Updated Information in Database
-    course = Course.get_course(course_key)
+        responded_thread_count = responded_threads_list.__len__()
 
-    course['course_rating'] = course_rating
-    course['forum_activity_rating'] = forum_activity_rating
+        course_rating, posts_per_thread_count = calculate_course_rating(responded_threads_list, responded_thread_count)
+        forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count)
 
-    post_count = sum(posts_per_thread_count)
+        # Unpacking the DTO
+        threads_per_month = stats_dto['threads_per_month']
+        thread_count = stats_dto['thread_count']
+        last_activity_date = stats_dto['last_activity_date']
+        question_thread_count = stats_dto['question_thread_count']
+        discussion_thread_count = stats_dto['discussion_thread_count']
 
-    course['statistics'] = {
-        'threads_per_month': threads_per_month,
-        'last_active_date': last_activity_date['last_activity_at'],
-        'total_thread_count': thread_count,
-        'responded_thread_count': responded_thread_count,
-        'total_post_count': post_count
-    }
+        print('--- Calculated Ratings ---')
+        print('Course Rating\t\t:\t', course_rating)
+        print('Forum Activity Rating\t:\t', forum_activity_rating, '\n')
 
-    course['analyzed_date_time'] = datetime.now()
+        # Saving Updated Information in Database
 
-    saved = Course.upsert_courses([course])
-    if not saved:
-        print('Error: Information not Saved to Database')
+        course['course_rating'] = course_rating
+        course['forum_activity_rating'] = forum_activity_rating
 
-    print('----- Statistics -----')
-    print('Threads per Month\t:\t', threads_per_month)
-    print('Last Active Date\t:\t', last_activity_date['last_activity_at'])
-    print('Total Thread Count\t:\t', thread_count)
-    print('Responded Thread Count\t:\t', responded_thread_count)
-    print('Question Thread Type\t:\t', question_thread_count)
-    print('Discussion Thread Type\t:\t', discussion_thread_count)
-    print('Total Post Count\t:\t', post_count)
-    print('Average Posts per Thread:\t', statistics.mean(posts_per_thread_count))
-    print('Maximum Posts per Thread:\t', max(posts_per_thread_count))
-    print('Minimum Posts per Thread:\t', min(posts_per_thread_count), '\n')
+        post_count = sum(posts_per_thread_count)
+
+        course['statistics'] = {
+            'threads_per_month': threads_per_month,
+            'last_active_date': last_activity_date['last_activity_at'],
+            'total_thread_count': thread_count,
+            'responded_thread_count': responded_thread_count,
+            'total_post_count': post_count
+        }
+
+        course['analyzed_date_time'] = datetime.now()
+
+        saved = Course.upsert_courses([course])
+        if not saved:
+            print('Error: Information not Saved to Database')
+
+        print('----- Statistics -----')
+        print('Threads per Month\t:\t', threads_per_month)
+        print('Last Active Date\t:\t', last_activity_date['last_activity_at'])
+        print('Total Thread Count\t:\t', thread_count)
+        print('Responded Thread Count\t:\t', responded_thread_count)
+        print('Question Thread Type\t:\t', question_thread_count)
+        print('Discussion Thread Type\t:\t', discussion_thread_count)
+        print('Total Post Count\t:\t', post_count)
+        print('Average Posts per Thread:\t', statistics.mean(posts_per_thread_count))
+        print('Maximum Posts per Thread:\t', max(posts_per_thread_count))
+        print('Minimum Posts per Thread:\t', min(posts_per_thread_count), '\n')
+
+    elif platform == 'Coursera':
+        # TODO: Coursera
+        # Note: In the case of Coursera
+        threads = list(Thread.get_discussion_threads({'course_id': course['_id']}, platform))
+
+        if threads.__len__() == 0:
+            print('Threads Not Available in the Database')
+            return
+        else:
+            print('Threads are available --------------------------------------++++++')
+
+    elif platform == 'FutureLearn':
+        # TODO: FutureLearn
+        pass
+    else:
+        print('Invalid Platform')
 
     print('Course Analysis Complete')

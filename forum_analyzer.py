@@ -61,10 +61,10 @@ def calculate_course_rating(results, total_threads_with_responses_count):
 
     # print('Thread Count =', iteration, 'and total_thread_count=', total_threads_with_responses_count)
 
-    result = Thread.upsert_threads(sentiment_data)  # Might be unnecessary because processing is fast enough
-
-    if not result:
-        print('Intermediate data could not be saved to the database, check database connection')
+    # result = Thread.upsert_threads(sentiment_data)  # Might be unnecessary because processing is fast enough
+    #
+    # if not result:
+    #     print('Intermediate data could not be saved to the database, check database connection')
 
     sentiment_values_of_each_thread = []
     for info in sentiment_data:

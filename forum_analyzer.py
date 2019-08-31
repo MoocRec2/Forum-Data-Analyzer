@@ -189,8 +189,7 @@ def analyze_course(course):
         print('Maximum Posts per Thread:\t', max(posts_per_thread_count))
         print('Minimum Posts per Thread:\t', min(posts_per_thread_count), '\n')
 
-    elif platform == 'Coursera':
-        # TODO: Coursera
+    elif platform == 'Coursera' or platform == 'FutureLearn':
         # Note: In the case of Coursera
         threads = list(Thread.get_discussion_threads({'course_id': course['_id']}, platform))
 
@@ -199,11 +198,21 @@ def analyze_course(course):
             return
         else:
             print('Threads are available --------------------------------------++++++')
+            for thread in threads:
+                pass
+            length = threads.__len__()
+            course_rating, posts_per_thread_count = calculate_course_rating(threads, length)
+            course_key = course['_id']
+            forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count)
 
-    elif platform == 'FutureLearn':
-        # TODO: FutureLearn
-        pass
+            course['course_rating'] = course_rating
+            course['forum_activity_rating'] = forum_activity_rating
+
+            saved = Course.upsert_courses([course])
+            if not saved:
+                print('Error: Information not Saved to Database')
+
     else:
-        print('Invalid Platform')
+        print('Error: Invalid Platform')
 
     print('Course Analysis Complete')

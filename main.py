@@ -1,6 +1,5 @@
 from forum_analyzer import analyze_course
 from db_connector import Course
-import numpy
 import time
 
 start_time = time.time()

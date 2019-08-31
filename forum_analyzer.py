@@ -47,7 +47,6 @@ def calculate_course_rating(results, total_threads_with_responses_count):
                     users.append(thread['username'])
             except KeyError:
                 username_missing_count += 1
-            # print('Username Missing Count:', username_missing_count)
         average_sentiment_value = statistics.mean(body_sentiment_values)
         sentiment_data.append(
             {
@@ -80,10 +79,10 @@ def calculate_course_rating(results, total_threads_with_responses_count):
     # Addition of the sentiment scores of the individual posts
     weighted_sentiment_score = average_sentiment_score * total_threads_with_responses_count
 
-    return weighted_sentiment_score, posts_per_thread_count
+    return weighted_sentiment_score, posts_per_thread_count, users.__len__()
 
 
-def calculate_forum_activity_rating(course_key, posts_per_thread_count):
+def calculate_forum_activity_rating(course_key, posts_per_thread_count, responded_thread_count):
     # Calculating Threads per Month
     latest_thread = Thread.get_latest_thread_of_course(course_key)
     earliest_thread = Thread.get_earliest_thread_of_course(course_key)
@@ -92,8 +91,8 @@ def calculate_forum_activity_rating(course_key, posts_per_thread_count):
     months = diff_month(max_date, min_date)
     if months == 0:
         months = 1
-    thread_count = Thread.get_thread_count_of_course(course_key)
-    threads_per_month = thread_count / months
+    total_thread_count = Thread.get_thread_count_of_course(course_key)
+    threads_per_month = total_thread_count / months
 
     # Getting Last Active Date
     last_activity_date = Thread.get_last_activity_date(course_key)
@@ -107,11 +106,21 @@ def calculate_forum_activity_rating(course_key, posts_per_thread_count):
     question_thread_count = Thread.get_question_thread_count_of_course(course_key)
     discussion_thread_count = Thread.get_discussion_thread_count_of_course(course_key)
 
-    score = threads_per_month * statistics.mean(posts_per_thread_count) / 10
+    # score = threads_per_month * statistics.mean(posts_per_thread_count) / 10
+
+    numerator = threads_per_month * total_thread_count * sum(posts_per_thread_count)
+    # print('DELTA:', delta)
+    delta = str(delta)
+    delta = delta.split('days')
+    delta = int(delta[0])
+    denominator = delta * (total_thread_count - responded_thread_count)
+    scale_adjustment = [0.01, 0.1, 1, 10, 100]
+    score = (numerator / denominator) * scale_adjustment[2]
+    # print('TEST SCORE:', score)
 
     stats_dto = {
         'threads_per_month': threads_per_month,
-        'thread_count': thread_count,
+        'thread_count': total_thread_count,
         'last_activity_date': dict(last_activity_date),
         'question_thread_count': question_thread_count,
         'discussion_thread_count': discussion_thread_count
@@ -142,8 +151,10 @@ def analyze_course(course):
 
         responded_thread_count = responded_threads_list.__len__()
 
-        course_rating, posts_per_thread_count = calculate_course_rating(responded_threads_list, responded_thread_count)
-        forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count)
+        course_rating, posts_per_thread_count, user_count = calculate_course_rating(responded_threads_list,
+                                                                                    responded_thread_count)
+        forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count,
+                                                                           responded_thread_count)
 
         # Unpacking the DTO
         threads_per_month = stats_dto['threads_per_month']
@@ -184,6 +195,7 @@ def analyze_course(course):
         print('Responded Thread Count\t:\t', responded_thread_count)
         print('Question Thread Type\t:\t', question_thread_count)
         print('Discussion Thread Type\t:\t', discussion_thread_count)
+        # print('No. of Unique Users\t:\t', user_count)
         print('Total Post Count\t:\t', post_count)
         print('Average Posts per Thread:\t', statistics.mean(posts_per_thread_count))
         print('Maximum Posts per Thread:\t', max(posts_per_thread_count))
@@ -201,9 +213,9 @@ def analyze_course(course):
             for thread in threads:
                 pass
             length = threads.__len__()
-            course_rating, posts_per_thread_count = calculate_course_rating(threads, length)
+            course_rating, posts_per_thread_count, user_count = calculate_course_rating(threads, length)
             course_key = course['_id']
-            forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count)
+            forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count, 1)
 
             course['course_rating'] = course_rating
             course['forum_activity_rating'] = forum_activity_rating

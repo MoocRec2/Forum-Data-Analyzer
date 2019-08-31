@@ -63,11 +63,12 @@ def normalize(courses_alt):
 
     # for x in range(1):
     #     print(courses[x]['course_rating'])
-    print('Normalization Complete')
+    print('----- Normalization Complete -----')
     print('Dataset Size:', courses.__len__())
 
 
 # Course.get_courses({'$and': [{'forum_activity_rating': {'$exists': 1}}, {'rating': {'$exists': 1}}, {'course_rating': {'$exists': 1}}]})
+print('--- Beginning Normalization ---')
 normalize(courses)
 end_time = time.time()
 elapsed_time = end_time - start_time

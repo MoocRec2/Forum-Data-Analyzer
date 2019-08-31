@@ -76,7 +76,7 @@ def calculate_course_rating(results, total_threads_with_responses_count):
 
     average_sentiment_score = statistics.mean(sentiment_values_of_each_thread)
 
-    # Addition of the sentiment scores of the individual posts
+    # To compensate for varying amounts of threads
     weighted_sentiment_score = average_sentiment_score * total_threads_with_responses_count
 
     return weighted_sentiment_score, posts_per_thread_count, users.__len__()

@@ -32,9 +32,15 @@ class GoogleNLP:
 
 
 class VADER:
+    ''' Wrapper Class For VADER Sentiment '''
 
     @staticmethod
     def analyze_sentiment(content):
-        polarity_scores = analyzer.polarity_scores(content)
-        data = {'score': polarity_scores['compound']}
-        return data
+        ''' Returns Sentiment of Text Data '''
+        try:
+            polarity_scores = analyzer.polarity_scores(content)
+            data = {'score': polarity_scores['compound']}
+            return data
+        except:
+            print('An Error Occurred - VADER Sentiment Analysis')
+            quit()

@@ -220,9 +220,9 @@ def analyze_course(course):
             course['course_rating'] = course_rating
             course['forum_activity_rating'] = forum_activity_rating
 
-            saved = Course.upsert_courses([course])
-            if not saved:
-                print('Error: Information not Saved to Database')
+            # saved = Course.upsert_courses([course])
+            # if not saved:
+            #     print('Error: Information not Saved to Database')
 
     else:
         print('Error: Invalid Platform')

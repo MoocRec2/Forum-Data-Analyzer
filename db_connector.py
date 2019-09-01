@@ -8,16 +8,17 @@ platform_to_collection_mapping = {
     'Coursera': 'coursera_threads'
 }
 
-with open('./db_credentials.json', 'r') as f:
-    db_credentials = json.load(f)
+# with open('./db_credentials.json', 'r') as f:
+#     db_credentials = json.load(f)
 
-connection_string = db_credentials['connectionString']
+# connection_string = db_credentials['connectionString']
 
 # client = MongoClient('mongodb://api:backendapi1@ds157901.mlab.com:57901/moocrecv2?retryWrites=false')
 # client = MongoClient('mongodb://localhost:27017/moocrecv2')
-client = MongoClient(connection_string)
+client = MongoClient('mongodb://user:password@52.66.18.67:27017/moocrec-v2')
+# client = MongoClient(connection_string)
 
-database = client.moocrecv2
+database = client['moocrec-v2']
 
 
 class Thread:
@@ -194,9 +195,12 @@ class Course:
             pass
 
     @staticmethod
-    def get_courses(search_query):
+    def get_courses(search_query, selection):
         try:
-            courses = database.courses.find(search_query)
+            if selection is None:
+                courses = database.courses.find(search_query)
+            else:
+                courses = database.courses.find(search_query, selection)
             return courses
         except:
             return None

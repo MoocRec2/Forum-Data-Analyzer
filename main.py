@@ -1,6 +1,7 @@
 from forum_analyzer import analyze_course
 from db_connector import Course
 import time
+import math
 
 start_time = time.time()
 
@@ -13,11 +14,21 @@ courses = [
     {'key': 'course-v1:DelftXRWTHx+BioBased1x+2T2019', 'platform': 'Edx'},  # 38 threads
 ]
 
+courses_1 = list(Course.get_courses({}, {'key': 1, 'platform': 1}))
 #  Get Courses
-print('Use Actual Dataset (y/n)?')
-dataset = input()
-if dataset == 'y':
-    courses = list(Course.get_courses({}))
+# print('Use Actual Dataset (y/n)?')
+print('Enter Limit to Process (max =', courses_1.__len__(), ')')
+limit = input()
+limit = int(limit)
+
+if limit > courses.__len__():
+    courses.extend(courses_1[0:(limit - courses.__len__())])
+elif limit < courses.__len__():
+    courses = courses[0:limit]
+
+print('Selected Dataset Size:', courses.__len__())
+
+# if dataset == 'y':
 
 ''' ANALYZE DATA - Will save rating to database'''
 for course in courses:
@@ -29,47 +40,71 @@ for course in courses:
 # Performing Normalization on the 2 Scores
 def normalize(courses_alt):
     # Get Processed Courses
-    courses = Course.get_courses(
-        {'$and': [{'forum_activity_rating': {'$exists': 1}}, {'course_rating': {'$exists': 1}}]})
-    courses = list(courses)
+    # courses = Course.get_courses(
+    #     {'$and': [{'forum_activity_rating': {'$exists': 1}}, {'course_rating': {'$exists': 1}}]})
+    # courses = list(courses)
+    print('BEFORE Normalization')
+    for course in courses_alt:
+        print('Course Rating:\t', course['course_rating'], 'Forum Activity Rating:\t',
+              course['forum_activity_rating'], 'Course:', course['key'])
     # for course in courses_alt:
     #     if 'forum_activity_rating' in course.keys() and 'course_rating' in course.keys():
     #         courses.append(course)
 
     print('Filtered Courses:', courses.__len__())
+    e_value = 2.718
+
+    for course in courses_alt:
+        # course['course_rating'] = math.log(course['course_rating'], e_value)
+        # course['forum_activity_rating'] = math.log(course['forum_activity_rating'], e_value)
+        # course['course_rating'] = math.sqrt(course['course_rating'])
+        # course['forum_activity_rating'] = math.sqrt(course['forum_activity_rating'])
+        course['course_rating'] = course['course_rating'] ** (1. / 6.)
+        course['forum_activity_rating'] = course['forum_activity_rating'] ** (1. / 6.)
 
     # FOR = Forum Activity Rating
     max_rating = 0
-    for course in courses:
+    for course in courses_alt:
         if course['forum_activity_rating'] > max_rating:
             max_rating = course['forum_activity_rating']
 
-    for course in courses:
+    for course in courses_alt:
         rating = (course['forum_activity_rating'] / max_rating) * 5
-        course['forum_activity_rating'] = rating
+        course['forum_activity_rating'] = round(rating, 2)
 
     # for x in range(1):
     #     print(courses[x]['forum_activity_rating'])
 
     # FOR = Course Rating
     max_rating = 0
-    for course in courses:
+    for course in courses_alt:
         if course['course_rating'] > max_rating:
             max_rating = course['course_rating']
 
-    for course in courses:
+    for course in courses_alt:
         rating = (course['course_rating'] / max_rating) * 5
-        course['course_rating'] = rating
+        course['course_rating'] = round(rating, 2)
 
     # for x in range(1):
     #     print(courses[x]['course_rating'])
     print('----- Normalization Complete -----')
     print('Dataset Size:', courses.__len__())
 
+    return courses_alt
 
-# Course.get_courses({'$and': [{'forum_activity_rating': {'$exists': 1}}, {'rating': {'$exists': 1}}, {'course_rating': {'$exists': 1}}]})
+
+# Course.get_courses({'$and': [{'forum_activity_rating': $exists{'': 1}}, {'rating': {'$exists': 1}}, {'course_rating': {'$exists': 1}}]})
 print('--- Beginning Normalization ---')
-normalize(courses)
+course_keys = []
+for course in courses:
+    course_keys.append(course['key'])
+courses = list(Course.get_courses({'key': {'$in': course_keys}}, None))
+# print(courses[0])
+courses_alt = normalize(courses)
+print('AFTER Normalization')
+for course in courses_alt:
+    print('Course Rating:\t', course['course_rating'], 'Forum Activity Rating:\t',
+          course['forum_activity_rating'], 'Course:', course['key'])
 end_time = time.time()
 elapsed_time = end_time - start_time
 print('Elapsed Time:', elapsed_time)

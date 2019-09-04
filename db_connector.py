@@ -14,11 +14,13 @@ platform_to_collection_mapping = {
 # connection_string = db_credentials['connectionString']
 
 # client = MongoClient('mongodb://api:backendapi1@ds157901.mlab.com:57901/moocrecv2?retryWrites=false')
-# client = MongoClient('mongodb://localhost:27017/moocrecv2')
-client = MongoClient('mongodb://user:password@52.66.18.67:27017/moocrec-v2')
+client = MongoClient('mongodb://localhost:27017/moocrecv2')
+
+# client = MongoClient('mongodb://user:password@52.66.18.67:27017/moocrec-v2')
 # client = MongoClient(connection_string)
 
-database = client['moocrec-v2']
+# database = client['moocrec-v2']
+database = client.moocrecv2
 
 
 class Thread:

@@ -17,9 +17,14 @@ courses = [
 courses_1 = list(Course.get_courses({}, {'key': 1, 'platform': 1}))
 #  Get Courses
 # print('Use Actual Dataset (y/n)?')
-print('Enter Limit to Process (max =', courses_1.__len__(), ')')
-limit = input()
-limit = int(limit)
+while True:
+    print('Enter Limit to Process (Full Dataset Size =', courses_1.__len__(), ')')
+    limit = input()
+    limit = int(limit)
+    if courses.__len__() >= limit > 0:
+        break
+    else:
+        print('Limit is Invalid, Please re-enter')
 
 if limit > courses.__len__():
     courses.extend(courses_1[0:(limit - courses.__len__())])

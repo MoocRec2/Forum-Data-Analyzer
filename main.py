@@ -54,9 +54,10 @@ def normalize(courses_alt):
     # Applying Modulus if needed
     for course in courses_alt:
         if course['course_rating'] < 0 or course['course_rating'] == 0:
-            course['course_rating'] = random.randint(1, 101) - course['course_rating']
+            course['course_rating'] = random.randint(1, random.randint(1, 1001)) - course['course_rating']
         if course['forum_activity_rating'] < 0 or course['forum_activity_rating'] == 0:
-            course['forum_activity_rating'] = random.randint(1, 101) - course['forum_activity_rating']
+            course['forum_activity_rating'] = random.randint(1, random.randint(1, 1001)) - course[
+                'forum_activity_rating']
         # elif course['course_rating'] == 0:
         #     pprint(course)
         #     quit(0)

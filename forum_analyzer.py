@@ -3,6 +3,12 @@ from db_connector import Thread, Course
 from datetime import datetime
 import statistics
 from pprint import pprint
+import random
+import time
+
+
+def reset_vars():
+    time.sleep(random.randint(0, 5) / 10)
 
 
 def diff_month(d1, d2):
@@ -180,7 +186,6 @@ def analyze_course(course):
 
         course_rating, posts_per_thread_count, user_count = calculate_course_rating(threads_list,
                                                                                     responded_thread_count)
-        print('Posts per Thread Count:', posts_per_thread_count)
         forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count,
                                                                            responded_thread_count)
 
@@ -277,3 +282,4 @@ def analyze_course(course):
         print('Error: Invalid Platform')
 
     print('Course Analysis Complete')
+    reset_vars()

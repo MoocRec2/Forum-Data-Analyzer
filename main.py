@@ -21,7 +21,7 @@ while True:
     print('Enter Limit to Process (Full Dataset Size =', courses_1.__len__(), ')')
     limit = input()
     limit = int(limit)
-    if courses.__len__() >= limit > 0:
+    if courses_1.__len__() >= limit > 0:
         break
     else:
         print('Limit is Invalid, Please re-enter')

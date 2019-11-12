@@ -2,6 +2,9 @@ from forum_analyzer import analyze_course
 from db_connector import Course
 import time
 import math
+import copy
+import random
+from pprint import pprint
 
 start_time = time.time()
 
@@ -48,6 +51,16 @@ def normalize(courses_alt):
     # courses = Course.get_courses(
     #     {'$and': [{'forum_activity_rating': {'$exists': 1}}, {'course_rating': {'$exists': 1}}]})
     # courses = list(courses)
+    # Applying Modulus if needed
+    for course in courses_alt:
+        if course['course_rating'] < 0 or course['course_rating'] == 0:
+            course['course_rating'] = random.randint(1, 101) - course['course_rating']
+        if course['forum_activity_rating'] < 0 or course['forum_activity_rating'] == 0:
+            course['forum_activity_rating'] = random.randint(1, 101) - course['forum_activity_rating']
+        # elif course['course_rating'] == 0:
+        #     pprint(course)
+        #     quit(0)
+
     print('BEFORE Normalization')
     for course in courses_alt:
         print('Course Rating:\t', course['course_rating'], 'Forum Activity Rating:\t',
@@ -83,8 +96,15 @@ def normalize(courses_alt):
     # FOR = Course Rating
     max_rating = 0
     for course in courses_alt:
-        if course['course_rating'] > max_rating:
-            max_rating = course['course_rating']
+        try:
+            if course['course_rating'] > max_rating:
+                max_rating = course['course_rating']
+        except:
+            pass
+            # print('Course Rating:', course['course_rating'])
+            # print('max_rating:', max_rating)
+            # print(course)
+            # quit(1)
 
     for course in courses_alt:
         rating = (course['course_rating'] / max_rating) * 5

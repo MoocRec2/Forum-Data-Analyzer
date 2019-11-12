@@ -32,8 +32,12 @@ def calculate_course_rating(results, total_threads_with_responses_count):
     posts_per_thread_count = []
     post_count = 0
     iteration = 0
+
+    users = []
+    print('Results.length:', results.__len__())
     for thread in results:
         body_data = get_thread_body_data(thread)
+
         posts_per_thread_count.append(body_data.__len__())
         body_sentiment_values = []
         users = []
@@ -74,7 +78,10 @@ def calculate_course_rating(results, total_threads_with_responses_count):
             print(info)
             pass
 
-    average_sentiment_score = statistics.mean(sentiment_values_of_each_thread)
+    try:
+        average_sentiment_score = statistics.mean(sentiment_values_of_each_thread)
+    except:
+        average_sentiment_score = 1
 
     # To compensate for varying amounts of threads
     weighted_sentiment_score = average_sentiment_score * total_threads_with_responses_count
@@ -86,9 +93,15 @@ def calculate_forum_activity_rating(course_key, posts_per_thread_count, responde
     # Calculating Threads per Month
     latest_thread = Thread.get_latest_thread_of_course(course_key)
     earliest_thread = Thread.get_earliest_thread_of_course(course_key)
-    min_date = datetime.strptime(earliest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
-    max_date = datetime.strptime(latest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
-    months = diff_month(max_date, min_date)
+    try:
+        min_date = datetime.strptime(earliest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+        max_date = datetime.strptime(latest_thread['created_at'], "%Y-%m-%dT%H:%M:%SZ")
+    except TypeError:
+        pass
+    try:
+        months = diff_month(max_date, min_date)
+    except UnboundLocalError:
+        months = 1
     if months == 0:
         months = 1
     total_thread_count = Thread.get_thread_count_of_course(course_key)
@@ -96,11 +109,17 @@ def calculate_forum_activity_rating(course_key, posts_per_thread_count, responde
 
     # Getting Last Active Date
     last_activity_date = Thread.get_last_activity_date(course_key)
-    last_active_date = datetime.strptime(last_activity_date['last_activity_at'], "%Y-%m-%dT%H:%M:%SZ")
+    try:
+        last_active_date = datetime.strptime(last_activity_date['last_activity_at'], "%Y-%m-%dT%H:%M:%SZ")
+    except TypeError:
+        last_active_date = ''
 
     # Calculating Forum Inactive Days
     today = datetime.today()
-    delta = today - last_active_date
+    try:
+        delta = today - last_active_date
+    except:
+        delta = 1
     # score = weighted_sentiment_score * ((months * 30) - delta.days)
 
     question_thread_count = Thread.get_question_thread_count_of_course(course_key)
@@ -113,15 +132,22 @@ def calculate_forum_activity_rating(course_key, posts_per_thread_count, responde
     delta = str(delta)
     delta = delta.split('days')
     delta = int(delta[0])
-    denominator = delta * (total_thread_count - responded_thread_count)
+    difference = total_thread_count - responded_thread_count
+    if difference == 0:
+        difference = 1
+    denominator = delta * difference
     scale_adjustment = [0.01, 0.1, 1, 10, 100]
     score = (numerator / denominator) * scale_adjustment[2]
     # print('TEST SCORE:', score)
 
+    try:
+        temp_holding = dict(last_activity_date)
+    except TypeError:
+        temp_holding = ''
     stats_dto = {
         'threads_per_month': threads_per_month,
         'thread_count': total_thread_count,
-        'last_activity_date': dict(last_activity_date),
+        'last_activity_date': temp_holding,
         'question_thread_count': question_thread_count,
         'discussion_thread_count': discussion_thread_count
     }
@@ -143,16 +169,18 @@ def analyze_course(course):
         platform = ''
         course = Course.get_course({'key': course_key})
 
-        responded_threads_list = list(Thread.get_discussion_threads_with_responses(course_key))
+        # responded_threads_list = list(Thread.get_discussion_threads_with_responses(course_key))
+        threads_list = list(Thread.get_discussion_threads_1(course_key))
 
-        if responded_threads_list.__len__() == 0:
-            print('No Threads Found in Database')
-            return
+        if threads_list.__len__() == 0:
+            print('No Responded Threads Found in Database')
+            # return
 
-        responded_thread_count = responded_threads_list.__len__()
+        responded_thread_count = threads_list.__len__()
 
-        course_rating, posts_per_thread_count, user_count = calculate_course_rating(responded_threads_list,
+        course_rating, posts_per_thread_count, user_count = calculate_course_rating(threads_list,
                                                                                     responded_thread_count)
+        print('Posts per Thread Count:', posts_per_thread_count)
         forum_activity_rating, stats_dto = calculate_forum_activity_rating(course_key, posts_per_thread_count,
                                                                            responded_thread_count)
 
@@ -174,9 +202,13 @@ def analyze_course(course):
 
         post_count = sum(posts_per_thread_count)
 
+        try:
+            temp = last_activity_date['last_activity_at']
+        except TypeError:
+            temp = ''
         course['statistics'] = {
             'threads_per_month': threads_per_month,
-            'last_active_date': last_activity_date['last_activity_at'],
+            'last_active_date': temp,
             'total_thread_count': thread_count,
             'responded_thread_count': responded_thread_count,
             'total_post_count': post_count
@@ -190,16 +222,33 @@ def analyze_course(course):
 
         print('----- Statistics -----')
         print('Threads per Month\t:\t', threads_per_month)
-        print('Last Active Date\t:\t', last_activity_date['last_activity_at'])
+        try:
+            temp = last_activity_date['last_activity_at']
+        except TypeError:
+            temp = 'N/A'
+
+        print('Last Active Date\t:\t', temp)
         print('Total Thread Count\t:\t', thread_count)
         print('Responded Thread Count\t:\t', responded_thread_count)
         print('Question Thread Type\t:\t', question_thread_count)
         print('Discussion Thread Type\t:\t', discussion_thread_count)
         # print('No. of Unique Users\t:\t', user_count)
         print('Total Post Count\t:\t', post_count)
-        print('Average Posts per Thread:\t', statistics.mean(posts_per_thread_count))
-        print('Maximum Posts per Thread:\t', max(posts_per_thread_count))
-        print('Minimum Posts per Thread:\t', min(posts_per_thread_count), '\n')
+        try:
+            mean = statistics.mean(posts_per_thread_count)
+        except:
+            mean = 1
+        print('Average Posts per Thread:\t', mean)
+        try:
+            est_max = max(posts_per_thread_count)
+        except:
+            est_max = mean * thread_count
+        print('Maximum Posts per Thread:\t', est_max)
+        try:
+            est_min = min(posts_per_thread_count)
+        except:
+            est_min = mean * thread_count
+        print('Minimum Posts per Thread:\t', est_min, '\n')
 
     elif platform == 'Coursera' or platform == 'FutureLearn':
         # Note: In the case of Coursera

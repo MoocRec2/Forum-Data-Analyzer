@@ -76,6 +76,20 @@ class Thread:
             return
 
     @staticmethod
+    def get_discussion_threads_1(course_id):
+        try:
+            results = database.threads.find(
+                {
+                    'course_id': course_id,
+                    'thread_type': 'discussion'
+                }
+            )
+            return results
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return
+
+    @staticmethod
     def get_latest_thread_of_course(course_id):
         try:
             result = database.threads.find({'course_id': course_id}).sort('created_at', -1).limit(1)
